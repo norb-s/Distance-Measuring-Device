@@ -1,30 +1,42 @@
-const int pingPin = 7;
-const int buzz = 6;
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(1, 2, 3, 4, 5, 6);
+const int buzz = 13;
+const int trigPin = 12;
+const int echoPin = 8;
+long duration;
+int distanceCm, distanceInch;
 int redLed = 9;
 int greenLed = 10;
 int yellowLed = 11;
 
 void setup() {
-  Serial.begin(9600);
+  lcd.begin(16,2);
   pinMode (buzz, OUTPUT);
+  pinMode (trigPin, OUTPUT);
+  pinMode (echoPin, INPUT);
 }
 
 void loop() {
-  long duration, inches, cm;
-  pinMode(pingPin, OUTPUT);
-  digitalWrite(pingPin, LOW);
+  digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
-
-  pinMode(pingPin, INPUT);
-  duration = pulseIn(pingPin, HIGH);
-
-  inches = microsecondsToInches(duration);
-  cm = microsecondsToCentimeters(duration);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distanceCm= duration*0.034/2;
+  distanceInch = duration*0.0133/2;
+  lcd.setCursor(0,0); 
+  lcd.print("Distance: "); 
+  lcd.print(distanceCm); 
+  lcd.print(" cm");
+  delay(10);
+  lcd.setCursor(0,1);
+  lcd.print("Distance: ");
+  lcd.print(distanceInch);
+  lcd.print(" inch");
+  delay(10);      
   
-  if (cm < 10) {
+  if (distanceCm < 10) {
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
     digitalWrite(yellowLed, LOW);
@@ -33,28 +45,15 @@ void loop() {
     noTone(buzz);
     delay(300);
   }
-  if (cm >= 11 && cm <= 20) {
+  if (distanceCm >= 11 && distanceCm <= 20) {
     digitalWrite(redLed, LOW);
     digitalWrite(greenLed, LOW);
     digitalWrite(yellowLed, HIGH);
   }
-  if (cm > 20) {
+  if (distanceCm > 20) {
     digitalWrite(redLed, LOW);
     digitalWrite(greenLed, HIGH);
     digitalWrite(yellowLed, LOW); 
   }
-  
-  Serial.print(inches);
-  Serial.print("in, ");
-  Serial.print(cm);
-  Serial.print("cm");
-  Serial.println();
+}
 
-  delay(100);
-}
-long microsecondsToInches(long microseconds) {
-  return microseconds / 74 / 2;
-}
-long microsecondsToCentimeters(long microseconds) {
-  return microseconds / 29 / 2;
-}
